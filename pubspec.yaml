@@ -1,0 +1,33 @@
+name: flutter_application_1
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <3.0.0" # Update this line to enable super-parameters feature
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  font_awesome_flutter: ^10.7.0
+  http: ^1.3.0 # Update to the recommended version
+  shared_preferences: ^2.0.7
+  image_picker: ^1.1.2
+  cupertino_icons: ^1.0.8 # Use with the CupertinoIcons class for iOS style icons.
+  get: ^4.7.2
+  device_info_plus: ^11.3.0
+  permission_handler: ^11.3.1
+  location: ^7.0.1
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
