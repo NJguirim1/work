@@ -8,21 +8,21 @@ class ReportScreen extends StatelessWidget {
   final String from;
   final String to;
 
-  ReportScreen({required this.token, required this.from, required this.to});
+  ReportScreen({super.key, required this.token, required this.from, required this.to});
 
   @override
   Widget build(BuildContext context) {
     controller.fetchReports(token, from, to);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Rapport des Agents')),
+      appBar: AppBar(title: const Text('Rapport des Agents')),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (controller.reports.isEmpty) {
-          return Center(child: Text('Aucun rapport trouvé.'));
+          return const Center(child: Text('Aucun rapport trouvé.'));
         }
 
         return ListView.builder(

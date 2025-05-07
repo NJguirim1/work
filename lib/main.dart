@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/view/Onboarding.dart';
+import 'package:flutter_application_1/view/sim_view.dart';
+
 import 'package:get/get.dart';
 import 'package:flutter_application_1/view/login_screen.dart';
 import 'package:flutter_application_1/view/data_screen.dart';
-import 'package:flutter_application_1/view/sim_view.dart'; // Assure-toi que ce fichier existe
+// Assure-toi que ce fichier existe
  // Import the onboarding screen
 
 void main() {
@@ -22,8 +24,9 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/onboardingScreen', page: () => const OnboardingScreen()),
         GetPage(name: '/loginScreen', page: () => const LoginScreen()),
-        GetPage(name: '/dataScreen', page: () => const DataScreen(token: '')), 
-        GetPage(name: '/salesScreen', page: () => const SimView ()), 
+        GetPage(name: '/dataScreen', page: () => const DataScreen(token: '')),
+        GetPage(name: '/SimView', page: () => SimView()),
+
       ],
     );
   }

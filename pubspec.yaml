@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
 
   font_awesome_flutter: ^10.7.0
-  http: ^1.3.0 # Update to the recommended version
+  http: ^1.4.0 # Update to the recommended version
   shared_preferences: ^2.0.7
   image_picker: ^1.1.2
   cupertino_icons: ^1.0.8 # Use with the CupertinoIcons class for iOS style icons.
@@ -21,6 +21,9 @@ dependencies:
   permission_handler: ^11.3.1
   location: ^7.0.1
   intl: ^0.20.2
+ 
+   
+  provider: ^6.1.5
 
 dev_dependencies:
   flutter_test:

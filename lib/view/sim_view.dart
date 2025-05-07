@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controllers/SimController.dart';
-import 'package:flutter_application_1/models/sim_model.dart';
-import 'package:flutter_application_1/view/Report_screen.dart';
-import 'package:flutter_application_1/view/statique_screen.dart';
-import 'package:flutter_application_1/view/nouvelle_vente.dart'; // Add this import
-
 import 'package:get/get.dart';
+import '../models/sim_model.dart';
 
 class SimView extends StatefulWidget {
-  const SimView({super.key});
-
   @override
   _SimViewState createState() => _SimViewState();
 }
@@ -18,9 +12,26 @@ class _SimViewState extends State<SimView> {
   final SimController simController = Get.put(SimController());
   int _selectedIndex = 1;
 
-  final String username = 'terrain';
-  final String token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjEwMDciLCJOYW1lIjoidGVycmFpbiogdGVycmFpbiIsIlVzZXJuYW1lIjoidGVycmFpbiIsIlR5cGUiOiJGaWVsZEFnZW50IiwibmJmIjoxNzM5OTAzNDgzLCJleHAiOjE3Mzk5MDcwODMsImlhdCI6MTczOTkwMzQ4MywiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.6GwWfbQRThy0b2qMeri_3bZBj31la-Ag2mFJB-Vz6Hg';
+  Map<String, dynamic>? pointDeVente;
+  Map<String, dynamic>? superviseur;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final args = Get.arguments;
+    if (args != null && args is Map) {
+      pointDeVente = args['pointDeVente'] as Map<String, dynamic>?;
+      superviseur = args['superviseur'] as Map<String, dynamic>?;
+    }
+
+    if (pointDeVente == null || superviseur == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar("Erreur", "Informations manquantes. Retour à l'écran précédent");
+        Get.back();
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -34,7 +45,7 @@ class _SimViewState extends State<SimView> {
       case 1:
         break;
       case 2:
-        Get.to(() => NouvelleVente());
+        Get.toNamed('/newSale');
         break;
       case 3:
         Get.toNamed('/stock');
@@ -45,166 +56,87 @@ class _SimViewState extends State<SimView> {
     }
   }
 
-  void _showEditModal(BuildContext context, SimModel sim) {
-    TextEditingController phoneController =
-        TextEditingController(text: sim.telephoneNumber);
-    TextEditingController cinController =
-        TextEditingController(text: sim.cinNumber);
+  @override
+  Widget build(BuildContext context) {
+    if (pointDeVente == null || superviseur == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Liste des Ventes SIM'),
+        backgroundColor: Colors.orange,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Modifier la vente",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(labelText: "Téléphone"),
-                ),
-                TextField(
-                  controller: cinController,
-                  decoration: const InputDecoration(labelText: "CIN"),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      // Call API to update sale (to be implemented)
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Erreur: $e')));
-                    }
-                  },
-                  child: const Text("Enregistrer"),
-                ),
+                Text('Point de Vente: ${pointDeVente?['Name'] ?? "Inconnu"}',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Text('Superviseur: ${superviseur?['Name'] ?? "Inconnu"}',
+                    style: TextStyle(fontSize: 16)),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
+          Expanded(
+            child: FutureBuilder<List<SimModel>>(
+              future: simController.fetchSimData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Erreur: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('Aucune vente trouvée.'));
+                }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 212, 99, 97),
-        toolbarHeight: 60,
-        leading: IconButton(
-          icon: const Icon(Icons.show_chart, color: Colors.white),
-          onPressed: () {
-            Get.to(() => ReportScreen(
-                  token: token,
-                  from: '',
-                  to: '',
-                ));
-          },
-        ),
-        title: const Text(
-          'Ventes',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.pie_chart_outline, color: Colors.white),
-            tooltip: 'Statistiques',
-            onPressed: () {
-              Get.to(() => StatsScreen(
-                    username: username,
-                    token: token,
-                  ));
-            },
+                return ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final sim = snapshot.data![index];
+
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      child: ListTile(
+                        leading: Icon(Icons.sim_card, color: Colors.orange),
+                        title: Text('CIN: ${sim.cinNumber}', style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Icc-Id: ${sim.contratNumber}'),
+                            Text('Traité par: ${sim.nameUserCentrale}'),
+                            Text('Date Émission: ${sim.dateEmission}'),
+                            Text('État: ${_getStateText(sim.state)}'),
+                            Text('Téléphone: ${sim.telephoneNumber.isNotEmpty ? sim.telephoneNumber : "Non disponible"}'),
+                          ],
+                        ),
+                        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
-      ),
-      body: FutureBuilder<List<SimModel>>(
-        future: simController.fetchSimData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-                child: Text(
-                    'Erreur de chargement des ventes: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Aucune vente trouvée.'));
-          }
-
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              final sim = snapshot.data![index];
-
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: ListTile(
-                  leading: const Icon(Icons.sim_card, color: Colors.orange),
-                  title: Text('CIN: ${sim.cinNumber}',
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Icc-Id: ${sim.contratNumber}'),
-                      Text('Traité par: ${sim.nameUserCentrale}'),
-                      Text('Date Émission: ${sim.dateEmission}'),
-                      Text('État: ${_getStateText(sim.state)}'),
-                      Text(
-                          'Téléphone: ${sim.telephoneNumber.isNotEmpty ? sim.telephoneNumber : "Non disponible"}'),
-                    ],
-                  ),
-                  trailing:
-                      const Icon(Icons.edit, size: 20, color: Colors.blue),
-                  onTap: () {
-                    _showEditModal(context, sim);
-                  },
-                ),
-              );
-            },
-          );
-        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        selectedItemColor: Colors.orange,
+        selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.send),
-            label: 'À envoyer',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_offer),
-            label: 'Ventes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: 'Nouvelle',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Stock',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Compte',
-          ),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.send), label: 'À envoyer'),
+          BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: 'Ventes'),
+          BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Nouvelle'),
+          BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Stock'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Compte'),
         ],
       ),
     );

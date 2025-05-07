@@ -8,6 +8,8 @@ android {
     namespace = "com.example.flutter_application_1"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+   // namespace ='com.amolg.flutterbarcodescanner'
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

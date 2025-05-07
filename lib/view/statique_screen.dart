@@ -8,7 +8,7 @@ class StatsScreen extends StatefulWidget {
   final String token;
   final String username;
 
-  const StatsScreen({Key? key, required this.token, required this.username}) : super(key: key);
+  const StatsScreen({super.key, required this.token, required this.username});
 
   @override
   State<StatsScreen> createState() => _StatsScreenState();
@@ -71,7 +71,7 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Résultat
+         
             Obx(() {
               if (controller.isLoading.value) {
                 return const CircularProgressIndicator();

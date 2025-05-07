@@ -1,8 +1,6 @@
 // controllers/vente_controller.dart
 import 'package:flutter_application_1/models/vente_model.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:io';
 
 
 class VenteController {

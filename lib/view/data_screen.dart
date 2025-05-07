@@ -37,7 +37,7 @@ class _DataScreenState extends State<DataScreen> {
 
   void _continue() {
     if (selectedPointDeVente != null && selectedSuperviseur != null) {
-      Get.toNamed('/salesScreen', arguments: {
+      Get.toNamed('/SimView', arguments: {
         "pointDeVente": selectedPointDeVente,
         "superviseur": selectedSuperviseur
       });
