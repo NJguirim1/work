@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/view/Onboarding.dart';
 import 'package:flutter_application_1/view/sim_view.dart';
+import 'package:flutter_application_1/view/statique_screen.dart';
 
 import 'package:get/get.dart';
 import 'package:flutter_application_1/view/login_screen.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/loginScreen', page: () => const LoginScreen()),
         GetPage(name: '/dataScreen', page: () => const DataScreen(token: '')),
         GetPage(name: '/SimView', page: () => SimView()),
-
+ GetPage(name: '/StatsScreen', page: () => StatsScreen(token: '', username: '',)),
       ],
     );
   }

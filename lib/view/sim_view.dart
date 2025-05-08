@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controllers/SimController.dart';
+import 'package:flutter_application_1/models/sim_model.dart';
+import 'package:flutter_application_1/view/statique_screen.dart';
 import 'package:get/get.dart';
-import '../models/sim_model.dart';
 
 class SimView extends StatefulWidget {
   @override
@@ -15,6 +16,8 @@ class _SimViewState extends State<SimView> {
   Map<String, dynamic>? pointDeVente;
   Map<String, dynamic>? superviseur;
 
+  bool isSupervisor = false;
+
   @override
   void initState() {
     super.initState();
@@ -23,6 +26,24 @@ class _SimViewState extends State<SimView> {
     if (args != null && args is Map) {
       pointDeVente = args['pointDeVente'] as Map<String, dynamic>?;
       superviseur = args['superviseur'] as Map<String, dynamic>?;
+
+      print('Superviseur: $superviseur');
+
+      if (superviseur != null) {
+        print('Superviseur full object: $superviseur');
+        String? typeText = superviseur?['TypeText'];
+        print('TypeText: $typeText');
+
+        if (typeText != null && typeText == "Superviseur terrain") {
+          isSupervisor = true;
+        } else {
+          if (superviseur?['Name'] != null && superviseur?['Name']!.contains("SUPERVISEUR")) {
+            isSupervisor = true;
+          }
+        }
+      }
+
+      print('Is Supervisor: $isSupervisor');
     }
 
     if (pointDeVente == null || superviseur == null) {
@@ -42,8 +63,6 @@ class _SimViewState extends State<SimView> {
       case 0:
         Get.toNamed('/toSend');
         break;
-      case 1:
-        break;
       case 2:
         Get.toNamed('/newSale');
         break;
@@ -59,15 +78,36 @@ class _SimViewState extends State<SimView> {
   @override
   Widget build(BuildContext context) {
     if (pointDeVente == null || superviseur == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Liste des Ventes SIM'),
+        title: Text('Des Ventes'),
         backgroundColor: Colors.orange,
+        leading: isSupervisor
+            ? IconButton(
+                icon: Icon(Icons.report),
+                onPressed: () {
+                  Get.toNamed('/report');
+                },
+              )
+            : null,
+        actions: [
+          if (isSupervisor)
+        IconButton(
+  icon: Icon(Icons.bar_chart),
+  onPressed: () {
+    final token = superviseur?['Token'] ?? '';
+    final username = superviseur?['Username'] ?? '';
+   Get.to(() => StatsScreen(
+  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW',
+  username: 'noomana',
+));
+  },
+),
+
+        ],
       ),
       body: Column(
         children: [
@@ -116,7 +156,8 @@ class _SimViewState extends State<SimView> {
                             Text('Téléphone: ${sim.telephoneNumber.isNotEmpty ? sim.telephoneNumber : "Non disponible"}'),
                           ],
                         ),
-                        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                        trailing: Icon(Icons.edit, size: 20),
+                        onTap: () => _showEditDialog(sim),
                       ),
                     );
                   },
@@ -153,5 +194,9 @@ class _SimViewState extends State<SimView> {
       default:
         return "Inconnu";
     }
+  }
+
+  void _showEditDialog(SimModel sim) {
+    // Ajoute ici le code pour afficher un dialog d’édition si nécessaire
   }
 }

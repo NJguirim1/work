@@ -1,3 +1,4 @@
+import 'package:flutter_application_1/services/api_service.dart' as ApiService;
 import 'package:get/get.dart';
 import '../models/stat_model.dart';
 import '../services/api_service.dart';
@@ -9,16 +10,33 @@ class StatsController extends GetxController {
   Future<void> getStats(String token, String username, String from, String to, String saleType) async {
     try {
       isLoading.value = true;
-      final result = await ApiService.fetchStats(
+      statsList.clear();
+
+      print("=== [STATS DEBUG] ===");
+      print("Username: $username");
+      print("From: $from");
+      print("To: $to");
+      print("SaleType: $saleType");
+      print("=====================");
+
+      final List<StatModel> stats = await ApiService.fetchStats(
         token: token,
         username: username,
         from: from,
         to: to,
         saleType: saleType,
       );
-      statsList.assignAll(result);
+
+      print(">> Réponse API reçue. Nombre de stats: ${stats.length}");
+
+      if (stats.isEmpty) {
+        print(">> Aucune statistique trouvée.");
+      }
+
+      statsList.addAll(stats);
     } catch (e) {
-      print("Erreur: $e");
+      print(">> ERREUR getStats: $e");
+      Get.snackbar("Erreur", e.toString(), snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }
