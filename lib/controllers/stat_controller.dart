@@ -1,7 +1,6 @@
 import 'package:flutter_application_1/services/api_service.dart' as ApiService;
 import 'package:get/get.dart';
 import '../models/stat_model.dart';
-import '../services/api_service.dart';
 
 class StatsController extends GetxController {
   var statsList = <StatModel>[].obs;

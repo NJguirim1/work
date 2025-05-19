@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controllers/SimController.dart';
 import 'package:flutter_application_1/models/sim_model.dart';
+import 'package:flutter_application_1/view/agent_report_screen.dart';
+import 'package:flutter_application_1/view/report_screen.dart';
 import 'package:flutter_application_1/view/statique_screen.dart';
 import 'package:get/get.dart';
 
 class SimView extends StatefulWidget {
+  const SimView({super.key});
+
   @override
   _SimViewState createState() => _SimViewState();
 }
@@ -64,7 +68,7 @@ class _SimViewState extends State<SimView> {
         Get.toNamed('/toSend');
         break;
       case 2:
-        Get.toNamed('/newSale');
+        Get.toNamed('/NouvelleVenteScreen');
         break;
       case 3:
         Get.toNamed('/stock');
@@ -83,24 +87,32 @@ class _SimViewState extends State<SimView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Des Ventes'),
+        title: const Text('Des Ventes'),
         backgroundColor: Colors.orange,
-        leading: isSupervisor
-            ? IconButton(
-                icon: Icon(Icons.report),
-                onPressed: () {
-                  Get.toNamed('/report');
-                },
-              )
-            : null,
+    leading: isSupervisor
+    ? IconButton(
+        icon: const Icon(Icons.report),
+        onPressed: () {
+          final token = superviseur?['Token'] ?? '';
+          final from = DateTime.now().toIso8601String().split('T')[0];
+          final to = from; // même jour
+
+     Get.to(() => AgentReportScreen(token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW', from: '', to: '',), arguments: {
+  'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW',
+  'from': '',
+  'to': '',
+});
+        },
+      )
+    : null,
         actions: [
           if (isSupervisor)
         IconButton(
-  icon: Icon(Icons.bar_chart),
+  icon: const Icon(Icons.bar_chart),
   onPressed: () {
     final token = superviseur?['Token'] ?? '';
     final username = superviseur?['Username'] ?? '';
-   Get.to(() => StatsScreen(
+   Get.to(() => const StatsScreen(
   token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW',
   username: 'noomana',
 ));
@@ -117,10 +129,10 @@ class _SimViewState extends State<SimView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Point de Vente: ${pointDeVente?['Name'] ?? "Inconnu"}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
                 Text('Superviseur: ${superviseur?['Name'] ?? "Inconnu"}',
-                    style: TextStyle(fontSize: 16)),
+                    style: const TextStyle(fontSize: 16)),
               ],
             ),
           ),
@@ -129,11 +141,11 @@ class _SimViewState extends State<SimView> {
               future: simController.fetchSimData(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Erreur: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('Aucune vente trouvée.'));
+                  return const Center(child: Text('Aucune vente trouvée.'));
                 }
 
                 return ListView.builder(
@@ -142,10 +154,10 @@ class _SimViewState extends State<SimView> {
                     final sim = snapshot.data![index];
 
                     return Card(
-                      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       child: ListTile(
-                        leading: Icon(Icons.sim_card, color: Colors.orange),
-                        title: Text('CIN: ${sim.cinNumber}', style: TextStyle(fontWeight: FontWeight.bold)),
+                        leading: const Icon(Icons.sim_card, color: Colors.orange),
+                        title: Text('CIN: ${sim.cinNumber}', style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -156,7 +168,7 @@ class _SimViewState extends State<SimView> {
                             Text('Téléphone: ${sim.telephoneNumber.isNotEmpty ? sim.telephoneNumber : "Non disponible"}'),
                           ],
                         ),
-                        trailing: Icon(Icons.edit, size: 20),
+                        trailing: const Icon(Icons.edit, size: 20),
                         onTap: () => _showEditDialog(sim),
                       ),
                     );
@@ -172,7 +184,7 @@ class _SimViewState extends State<SimView> {
         onTap: _onItemTapped,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.send), label: 'À envoyer'),
           BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: 'Ventes'),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Nouvelle'),
