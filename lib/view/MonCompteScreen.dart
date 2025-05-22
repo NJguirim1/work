@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/view/Onboarding.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/view/PointageScreen.dart';
- // ✅ Adjust this if needed
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MonCompteScreen extends StatelessWidget {
   const MonCompteScreen({super.key});
@@ -26,6 +25,7 @@ class MonCompteScreen extends StatelessWidget {
         title: const Text("Mon Compte"),
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 213, 91, 9),
+        
       ),
       body: Center(
         child: Padding(

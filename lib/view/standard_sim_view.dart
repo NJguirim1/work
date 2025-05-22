@@ -240,19 +240,20 @@ class _StandardTabContentState extends State<_StandardTabContent> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
+                  child: const Icon(Icons.videogame_asset, color: Colors.white),
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => GameView(
-                          playerIdentificationNumber: _cinController.text,
-                          instanceId: 3,
-                          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjEwMDgiLCJOYW1lIjoiTmF3ZWwgZ2hhbmRvdXIiLCJVc2VybmFtZSI6Im5hd2VsIiwiVHlwZSI6IkZpZWxkQWdlbnQiLCJuYmYiOjE3NDc3NjEyNDEsImV4cCI6MTc0Nzc2NDg0MSwiaWF0IjoxNzQ3NzYxMjQxLCJpc3MiOiJJc3N1ZXIiLCJhdWQiOiJBdWRpZW5jZSJ9.Dru2MGhcoAHUJ1Vu8g1lOecVtlKhTTyt-JHhmH75yIk',  // Pass token here!
+                          token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ3ODM3OTIzLCJleHAiOjE3NDc4NDE1MjMsImlhdCI6MTc0NzgzNzkyMywiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.Xr4Kqn18HxaKl-oFqz4y2XAe7CQ_E9OxcM58_u7yLgY",
+                          playerId: "1444",       // Replace with your player ID
+                          sellPointId: "2046", // Replace with your sell point ID
+                          instanceId: 45330,                   // Replace with your instance ID
                         ),
                       ),
                     );
                   },
-                  child: const Icon(Icons.videogame_asset, color: Colors.white),
                 ),
               ),
             ],

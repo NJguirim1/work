@@ -1,40 +1,92 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/game_model.dart';
+import '../models/gift_model.dart';
+import '../models/play_result_model.dart';
 
 class GameController {
-  final String apiUrl = 'http://preprod-orange.ernst.tn/Main/Api/Game/Play';
+  final String baseUrl = "http://preprod-orange.ernst.tn/Main/Api/Game";
+  final String token;
+  final String playerId;
+  final String sellPointId;
+  final int instanceId;
 
-  Future<GamePlayResponse> playGame(GamePlayRequest request, String token) async {
-    try {
-      final requestBody = request.toJson();
+  GameController({
+    required this.token,
+    required this.playerId,
+    required this.sellPointId,
+    required this.instanceId,
+  });
 
-      print('Token used: $token');  // Debug token here
-      print('📤 Sending request to $apiUrl');
-      print('📦 Request body: ${jsonEncode(requestBody)}');
+  Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
 
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(requestBody),
-      );
+  Future<PlayResult> playGame({bool isNewMethod = true}) async {
+    final url = Uri.parse("$baseUrl/Play");
+    final body = json.encode({
+      "InstanceId": instanceId,
+      "PlayerIdentificationNumber": playerId,
+      "IsNewMethod": isNewMethod,
+    });
 
-      print('📥 Response status: ${response.statusCode}');
-      print('📥 Response body: ${response.body}');
+    print("▶️ POST $url");
+    print("🔐 Headers: $_headers");
+    print("📦 Body: $body");
 
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return GamePlayResponse.fromJson(json);
-      } else if (response.statusCode == 401) {
-        return GamePlayResponse(success: false, message: 'Erreur: non autorisé (401)');
-      } else {
-        return GamePlayResponse(success: false, message: 'Erreur serveur (${response.statusCode})');
-      }
-    } catch (e) {
-      return GamePlayResponse(success: false, message: 'Erreur: $e');
+    final response = await http.post(url, headers: _headers, body: body);
+
+    print("📥 Response Status: ${response.statusCode}");
+    print("📥 Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return PlayResult.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('❌ Failed to play game: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  Future<List<Gift>> getAvailableGifts({bool isPortability = false}) async {
+    final url = Uri.parse("$baseUrl/GetAvailableGifts");
+    final body = json.encode({
+      "PlayerIdentificationNumber": playerId,
+      "SellPointId": sellPointId,
+      "IsPortability": isPortability,
+    });
+
+    print("▶️ POST $url");
+    print("🔐 Headers: $_headers");
+    print("📦 Body: $body");
+
+    final response = await http.post(url, headers: _headers, body: body);
+
+    print("📥 Response Status: ${response.statusCode}");
+    print("📥 Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => Gift.fromJson(e)).toList();
+    } else {
+      throw Exception('❌ Failed to get available gifts: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  Future<String> getGiftImage(int giftId) async {
+    final url = Uri.parse("$baseUrl/GetGiftImage?giftId=$giftId");
+
+    print("▶️ GET $url");
+    print("🔐 Headers: $_headers");
+
+    final response = await http.get(url, headers: _headers);
+
+    print("📥 Response Status: ${response.statusCode}");
+    print("📥 Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['imageUrl'] ?? '';
+    } else {
+      throw Exception('❌ Failed to get gift image: ${response.statusCode} ${response.body}');
     }
   }
 }

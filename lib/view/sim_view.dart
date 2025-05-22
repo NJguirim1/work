@@ -75,6 +75,7 @@ class _SimViewState extends State<SimView> {
         break;
       case 4:
         Get.toNamed('/MonCompteScreen');
+        Get.toNamed('/account');
         break;
     }
   }
@@ -97,8 +98,8 @@ class _SimViewState extends State<SimView> {
           final from = DateTime.now().toIso8601String().split('T')[0];
           final to = from; // même jour
 
-     Get.to(() => AgentReportScreen(token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW', from: '', to: '',), arguments: {
-  'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW',
+     Get.to(() => SupervisorReportPage (token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ3ODQ5MzM5LCJleHAiOjE3NDc4NTI5MzksImlhdCI6MTc0Nzg0OTMzOSwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.0w-i4Ks3UvOVo6_EpxVzDU0eGhcsMXXT_wGwlihsR7k', from: '', to: '',), arguments: {
+  'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ3ODQ5MzM5LCJleHAiOjE3NDc4NTI5MzksImlhdCI6MTc0Nzg0OTMzOSwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.0w-i4Ks3UvOVo6_EpxVzDU0eGhcsMXXT_wGwlihsR7k',
   'from': '',
   'to': '',
 });

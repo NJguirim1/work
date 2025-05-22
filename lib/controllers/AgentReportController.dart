@@ -1,96 +1,46 @@
-import 'package:flutter/foundation.dart';
-import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:flutter_application_1/models/SupervisorReportModel.dart';
 
-class ReportController extends GetxController {
-  final String token;  // The token passed during initialization
-  var isLoading = false.obs;
-  var reportList = <AgentReport>[].obs;
+class SupervisorReportController {
+  final Dio _dio = Dio();
+  final String _baseUrl = 'http://preprod-orange.ernst.tn';
 
-  ReportController({required this.token});  // Constructor to pass the token
-
-  // Function to fetch report data
-  Future<void> fetchReport(String fromDate, String toDate) async {
-    final url = Uri.parse('http://preprod-orange.ernst.tn/Main/Api/Sims/GetSupervisorReport');
-
-    // API parameters
-    final params = {
-      'from': fromDate,
-      'to': toDate,
-      'resultType': '4',
-    };
-
-    // Log the request parameters
-    debugPrint("Fetching report with parameters: $params");
-
-    isLoading.value = true;
-
+  Future<List<SupervisorReport>> fetchReport({
+    required String token,
+    required String from,
+    required String to,
+  }) async {
     try {
-      // Log the token before sending the request
-      debugPrint("Authorization token: $token");
+      print('From: $from');
+      print('To: $to');
 
-      // Log the request URL
-      debugPrint("Sending GET request to $url");
-
-      final response = await http.get(
-        url.replace(queryParameters: params),
-        headers: {
-          'Authorization': 'Bearer $token',  // Add token to headers
+      final response = await _dio.get(
+        '$_baseUrl/Main/Api/Sims/GetSupervisorReport',
+        queryParameters: {
+          'from': from,
+          'to': to,
+          'resultType': 4,
         },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
       );
 
-      // Log the response status and body
-      debugPrint("Response status: ${response.statusCode}");
-      debugPrint("Response body: ${response.body}");
+      print('Response status code: ${response.statusCode}');
+      print('Response data: ${response.data}');
 
-      if (response.statusCode == 200) {
-        // Parse the response body
-        final data = json.decode(response.body);
+      final data = response.data['Body']?['FieldUserSales'];
 
-        // Log the data fetched from the API
-        debugPrint("Data fetched: ${data['data']}");
-
-        // Assuming the response body contains a list of reports
-        reportList.value = data['data'].map<AgentReport>((item) => AgentReport.fromJson(item)).toList();
-
-        // Log the updated report list
-        debugPrint("Updated report list: ${reportList.length} items");
-      } else {
-        // Handle API errors (status code != 200)
-        Get.snackbar('Error', 'Failed to load report data');
-        debugPrint("Failed to fetch report. Status code: ${response.statusCode}");
+      if (data == null || data is! List) {
+        print('No FieldUserSales data found');
+        return [];
       }
+
+      return data.map<SupervisorReport>((e) => SupervisorReport.fromJson(e)).toList();
     } catch (e) {
-      // Handle any errors
-      Get.snackbar('Error', 'Something went wrong: $e');
-      debugPrint("Error occurred while fetching report: $e");
-    } finally {
-      isLoading.value = false;
+      throw Exception('Erreur API: $e');
     }
-  }
-}
-
-// Example data model (adjust according to the actual API response structure)
-class AgentReport {
-  final String agentName;
-  final int normalSales;
-  final int portabilitySales;
-  final int totalSales;
-
-  AgentReport({
-    required this.agentName,
-    required this.normalSales,
-    required this.portabilitySales,
-    required this.totalSales,
-  });
-
-  factory AgentReport.fromJson(Map<String, dynamic> json) {
-    return AgentReport(
-      agentName: json['agentName'],
-      normalSales: json['normalSales'],
-      portabilitySales: json['portabilitySales'],
-      totalSales: json['totalSales'],
-    );
   }
 }

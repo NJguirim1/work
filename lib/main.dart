@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/AgentReportModel.dart';
+import 'package:flutter_application_1/models/SupervisorReportModel.dart';
 import 'package:flutter_application_1/view/MonCompteScreen.dart';
 import 'package:flutter_application_1/view/Onboarding.dart';
 import 'package:flutter_application_1/view/agent_report_screen.dart';
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/dataScreen', page: () => const DataScreen(token: '')),
         GetPage(name: '/SimView', page: () => SimView()),
  GetPage(name: '/StatsScreen', page: () => const StatsScreen(token: '', username: '',)),
-  GetPage(name: '/ReportView', page: () => AgentReportScreen(token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW', from: '', to: '',)),
+  GetPage(name: '/ReportView', page: () => SupervisorReportPage (token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW', from: '', to: '',)),
     GetPage(name: '/NouvelleVenteScreen', page: () => const NouvelleVenteScreen()),
           GetPage(name: '/MonCompteScreen', page: () => const MonCompteScreen()),
       ],
