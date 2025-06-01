@@ -1,32 +1,36 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_application_1/controllers/etrangercontroller.dart';
+
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 
-class EtrangerSimScreen extends StatefulWidget {
-  final String token;
-
-  EtrangerSimScreen({required this.token});
-
+class EtrangerSimView extends StatefulWidget {
   @override
-  _EtrangerSimScreenState createState() => _EtrangerSimScreenState();
+  _EtrangerSimViewState createState() => _EtrangerSimViewState();
 }
 
-class _EtrangerSimScreenState extends State<EtrangerSimScreen> {
-  final ImagePicker _picker = ImagePicker();
+class _EtrangerSimViewState extends State<EtrangerSimView> {
+  final EtrangerSimController controller = EtrangerSimController();
 
-  String? passportNumber; // facultatif
-  String? iccid;
+  String iccid = '';
+  final TextEditingController passportNumberController = TextEditingController();
+
   File? passportImage;
   File? contractImage;
 
-  void showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-  }
+  // Replace by your actual token or get it dynamically
+  final String token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjU2NTEiLCJOYW1lIjoiQUJET1VMSSBNSUxFRCIsIlVzZXJuYW1lIjoibWlsZWQiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ4NTU1MDE0LCJleHAiOjE3NDg1NTg2MTQsImlhdCI6MTc0ODU1NTAxNCwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.gf7-XEzgy_bYrTpgea80sSnnDKGvGJp4uBlPccGzSj4';
+
+  // You might want to get these values from user or context:
+  final String sellPointId = '2040';
+  final String latitude = '35.667336';
+  final String longitude = '10.9001284';
+  final String city = 'SAYADA';
+  final String country = 'TN';
+  final String inChargeSupervisorId = '1507';
+  final String dateEnvoi = DateTime.now().toIso8601String();
 
   Future<void> scanIccid() async {
     var result = await BarcodeScanner.scan();
@@ -37,170 +41,117 @@ class _EtrangerSimScreenState extends State<EtrangerSimScreen> {
     }
   }
 
-  Future<void> pickImage(String type) async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+  Future<void> takePhoto(int imageNumber) async {
+    final picker = ImagePicker();
+    final pickedFile =
+        await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
     if (pickedFile != null) {
-      final file = File(pickedFile.path);
       setState(() {
-        if (type == 'passport') {
-          passportImage = file;
-        } else if (type == 'contract') {
-          contractImage = file;
-        }
+        if (imageNumber == 1) passportImage = File(pickedFile.path);
+        if (imageNumber == 2) contractImage = File(pickedFile.path);
       });
     }
   }
 
-  Future<File?> compressImage(File file) async {
-    final dir = await getTemporaryDirectory();
-    final targetPath = path.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}_${path.basename(file.path)}');
+  Future<void> submit() async {
+    if (iccid.isEmpty || passportImage == null || contractImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('Veuillez scanner ICCID et prendre toutes les photos')),
+      );
+      return;
+    }
 
-    final result = await FlutterImageCompress.compressAndGetFile(
-      file.absolute.path,
-      targetPath,
-      quality: 70,
-      format: CompressFormat.jpeg,
+    final response = await controller.submitEtrangerSim(
+      token: token,
+      iccid: iccid,
+      passportNumber: passportNumberController.text,
+      passportImage: passportImage!,
+      contractImage: contractImage!,
+      sellPointId: sellPointId,
+      latitude: latitude,
+      longitude: longitude,
+      city: city,
+      country: country,
+      inChargeSupervisorId: inChargeSupervisorId,
+      dateEnvoi: dateEnvoi,
     );
 
-    return result != null ? File(result.path) : null;
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Soumission réussie')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('Erreur ${response.statusCode} : ${response.body}')),
+      );
+    }
   }
 
-  Future<void> submit() async {
-    if (iccid == null || iccid!.isEmpty) {
-      showSnackBar("Veuillez entrer ou scanner l'ICCID");
-      return;
-    }
-    if (passportImage == null || contractImage == null) {
-      showSnackBar("Veuillez prendre les photos du passeport et du contrat");
-      return;
-    }
-
-    showSnackBar("Compression des images...");
-    final compressedPassport = await compressImage(passportImage!);
-    final compressedContract = await compressImage(contractImage!);
-
-    if (compressedPassport == null || compressedContract == null) {
-      showSnackBar("Erreur lors de la compression des images");
-      return;
-    }
-
-    var uri = Uri.parse('http://preprod-orange.ernst.tn/Main/Api/Sims/CreateSell');
-    var request = http.MultipartRequest('POST', uri);
-
-    request.headers['Authorization'] = 'Bearer ${widget.token}';
-
-    request.fields.addAll({
-      'Type': '2',  // Type 2 = Étranger
-      'IccId': iccid!,
-      'PassportNumber': passportNumber ?? '',
-      'SellPointId': '2040',
-      'Latitude': '35.667336',
-      'Longitude': '10.9001284',
-      'City': 'SAYADA',
-      'Country': 'TN',
-      'InChargeSupervisorId': '1507',
-      'DateEnvoi': DateTime.now().toIso8601String(),
-    });
-
-    request.files.add(await http.MultipartFile.fromPath(
-      'Etranger_PassportImage',
-      compressedPassport.path,
-    ));
-    request.files.add(await http.MultipartFile.fromPath(
-      'Etranger_ContratImage',
-      compressedContract.path,
-    ));
-
-    try {
-      showSnackBar("Envoi en cours...");
-      var response = await request.send();
-      final responseBody = await response.stream.bytesToString();
-
-      if (response.statusCode == 200) {
-        showSnackBar("Succès : données envoyées");
-      } else {
-        showSnackBar("Erreur API : ${response.statusCode}");
-      }
-    } catch (e) {
-      showSnackBar("Erreur réseau : $e");
-    }
+  @override
+  void dispose() {
+    passportNumberController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Vente SIM Étranger'),
-        backgroundColor: const Color.fromARGB(255, 207, 82, 36),
-        leading: BackButton(),
+        title: const Text('Vente SIM Étranger'),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('ICCID'),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    initialValue: iccid,
-                    onChanged: (value) => iccid = value,
-                    decoration: InputDecoration(hintText: "Entrez ou scannez l'ICCID"),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.qr_code_scanner),
-                  onPressed: scanIccid,
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-
-            Text('N° Passport (facultatif)'),
-            TextFormField(
-              onChanged: (value) => passportNumber = value,
-              decoration: InputDecoration(hintText: "Entrez le numéro de passeport"),
-            ),
-            SizedBox(height: 20),
-
-            Text('Photos'),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text('Passeport'),
-                    IconButton(
-                      icon: Icon(Icons.camera_alt),
-                      onPressed: () => pickImage('passport'),
-                    ),
-                    if (passportImage != null)
-                      Image.file(passportImage!, width: 80, height: 80, fit: BoxFit.cover),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('Contrat'),
-                    IconButton(
-                      icon: Icon(Icons.camera_alt),
-                      onPressed: () => pickImage('contract'),
-                    ),
-                    if (contractImage != null)
-                      Image.file(contractImage!, width: 80, height: 80, fit: BoxFit.cover),
-                  ],
-                ),
-              ],
-            ),
-
-            SizedBox(height: 30),
-            Center(
-              child: ElevatedButton(
-                onPressed: submit,
-                child: Text('Soumettre'),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: scanIccid,
+                child: const Text('Scanner ICCID'),
               ),
-            )
-          ],
+              const SizedBox(height: 10),
+              Text('ICCID scanné: $iccid'),
+              const SizedBox(height: 20),
+              TextField(
+                controller: passportNumberController,
+                decoration: const InputDecoration(labelText: 'Numéro Passeport (optionnel)'),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => takePhoto(1),
+                    child: const Text('Photo Passeport'),
+                  ),
+                  const SizedBox(width: 10),
+                  passportImage == null
+                      ? const Text('Aucune photo')
+                      : const Icon(Icons.check_circle, color: Colors.green),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => takePhoto(2),
+                    child: const Text('Photo Contrat'),
+                  ),
+                  const SizedBox(width: 10),
+                  contractImage == null
+                      ? const Text('Aucune photo')
+                      : const Icon(Icons.check_circle, color: Colors.green),
+                ],
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: submit,
+                child: const Text('Soumettre'),
+              ),
+            ],
+          ),
         ),
       ),
     );

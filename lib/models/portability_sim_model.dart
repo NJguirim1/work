@@ -1,56 +1,30 @@
-class PortabilitySimModel {
-  String cin;
+class PortabiliteSimSale {
+  int type; // 1 pour portabilité
   String iccId;
-  int type;
-  String portabilityNumber;
+  String nationalIdNumber; // CIN
+  String portabilityNumber; // numéro de portabilité
+  String sellPointId;
+  String latitude;
+  String longitude;
+  String city;
+  String country;
+  String inChargeSupervisorId;
+  String dateEnvoi;
 
-  String? frontCinImage;
-  String? backCinImage;
-  String? rioSignatureImage;
-  String? rioSignatureImage2;
-  String? portabilityNumberImage;
-  String? contractImage;
+ 
+  String passportNumber = ''; // vide
 
-  PortabilitySimModel({
-    required this.cin,
+  PortabiliteSimSale({
+    this.type = 1, // toujours 1 pour portabilité
     required this.iccId,
-    required this.type,
+    required this.nationalIdNumber,
     required this.portabilityNumber,
-    this.frontCinImage,
-    this.backCinImage,
-    this.rioSignatureImage,
-    this.rioSignatureImage2,
-    this.portabilityNumberImage,
-    this.contractImage,
+    required this.sellPointId,
+    required this.latitude,
+    required this.longitude,
+    required this.city,
+    required this.country,
+    required this.inChargeSupervisorId,
+    required this.dateEnvoi,
   });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'cin': cin,
-      'iccId': iccId,
-      'type': type,
-      'portabilityNumber': portabilityNumber,
-      'frontCinImage': frontCinImage,
-      'backCinImage': backCinImage,
-      'rioSignatureImage': rioSignatureImage,
-      'rioSignatureImage2': rioSignatureImage2,
-      'portabilityNumberImage': portabilityNumberImage,
-      'contractImage': contractImage,
-    };
-  }
-
-  factory PortabilitySimModel.fromJson(Map<String, dynamic> json) {
-    return PortabilitySimModel(
-      cin: json['cin'],
-      iccId: json['iccId'],
-      type: json['type'],
-      portabilityNumber: json['portabilityNumber'],
-      frontCinImage: json['frontCinImage'],
-      backCinImage: json['backCinImage'],
-      rioSignatureImage: json['rioSignatureImage'],
-      rioSignatureImage2: json['rioSignatureImage2'],
-      portabilityNumberImage: json['portabilityNumberImage'],
-      contractImage: json['contractImage'],
-    );
-  }
 }

@@ -1,115 +1,56 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/SimStandardModel.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 
 class StandardSimController {
-  StandardSimModel model;
+  final String baseUrl = 'http://preprod-orange.ernst.tn/';
 
-  StandardSimController(this.model);
+  Future<http.Response> submitStandardSim({
+    required String token,
+    required String iccid,
+    required String cin,
+    required File frontCinImage,
+    required File backCinImage,
+    required File contractImage,
+  }) async {
+    final url = Uri.parse(baseUrl + 'Main/Api/Sims/CreateSell');
 
-  final ImagePicker _picker = ImagePicker();
+    String frontCinBase64 = base64Encode(await frontCinImage.readAsBytes());
+    String backCinBase64 = base64Encode(await backCinImage.readAsBytes());
+    String contractBase64 = base64Encode(await contractImage.readAsBytes());
 
-  Future<void> pickImageFront() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      model.frontImagePath = await _compressImage(pickedFile.path);
-      print("Front image selected: ${model.frontImagePath}");
-    }
-  }
+    final body = {
+      'Type': 0,
+      'IccId': iccid,
+      'NationalIdentificationNumber': cin,
+      'PassportNumber': '',
+      'SellPointId': '2040',
+      'Latitude': '35.667336',
+      'Longitude': '10.9001284',
+      'City': 'SAYADA',
+      'Country': 'TN',
+      'InChargeSupervisorId': '1507',
+      'DateEnvoi': DateTime.now().toIso8601String().split('.').first,
+      'Standard_NationalIdentificationNumberFrontImage': frontCinBase64,
+      'Standard_NationalIdentificationNumberBackImage': backCinBase64,
+      'Standard_ContratImage': contractBase64,
+    };
 
-  Future<void> pickImageBack() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      model.backImagePath = await _compressImage(pickedFile.path);
-      print("Back image selected: ${model.backImagePath}");
-    }
-  }
+    print('📝 Fields sent: $body');
 
-  Future<void> pickContractImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      model.contractImagePath = await _compressImage(pickedFile.path);
-      print("Contract image selected: ${model.contractImagePath}");
-    }
-  }
-
-  Future<String> _compressImage(String filePath) async {
-    final result = await FlutterImageCompress.compressAndGetFile(
-      filePath,
-      "${filePath}_compressed.jpg",
-      quality: 40,
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
     );
-    print("Image compressed: ${result?.path ?? filePath}");
-    return result?.path ?? filePath;
-  }
 
-  Future<bool> submitStandardSimWithResponse(String token) async {
-    try {
-      print("📤 Sending request to API...");
+    print('📨 Status Code: ${response.statusCode}');
+    print('📨 API Response: ${response.body}');
 
-      final uri = Uri.parse("http://preprod-orange.ernst.tn/Main/Api/Sims/CreateSell");
-      var request = http.MultipartRequest('POST', uri);
-
-      request.headers['Authorization'] = 'Bearer $token';
-
-      // Champs texte
-      request.fields['Type'] = '0';
-      request.fields['IccId'] = model.iccId;
-      request.fields['NationalIdentificationNumber'] = model.cin;
-      request.fields['SellPointId'] = '2046';
-      request.fields['Latitude'] = '36.8065';
-      request.fields['Longitude'] = '10.1815';
-      request.fields['City'] = 'Tunis';
-      request.fields['Country'] = 'TN';
-      request.fields['InChargeSupervisorId'] = '5651';
-      request.fields['DateEnvoi'] = DateTime.now().toIso8601String();
-
-      
-      print("📦 Champs envoyés :");
-      request.fields.forEach((key, value) {
-        print("- $key: $value");
-      });
-
-  
-      if (model.frontImagePath != null) {
-        print("📷 Ajout image avant: ${model.frontImagePath}");
-        request.files.add(await http.MultipartFile.fromPath(
-          'Standard_NationalIdentificationNumberFrontImage',
-          model.frontImagePath!,
-        ));
-      }
-
-      if (model.backImagePath != null) {
-        print("📷 Ajout image arrière: ${model.backImagePath}");
-        request.files.add(await http.MultipartFile.fromPath(
-          'Standard_NationalIdentificationNumberBackImage',
-          model.backImagePath!,
-        ));
-      }
-
-      if (model.contractImagePath != null) {
-        print("📷 Ajout image contrat: ${model.contractImagePath}");
-        request.files.add(await http.MultipartFile.fromPath(
-          'Standard_ContratImage',
-          model.contractImagePath!,
-        ));
-      }
-
-      
-      var response = await request.send();
-      var body = await response.stream.bytesToString();
-
-      print("✅ Statut HTTP: ${response.statusCode}");
-      print("📨 Corps réponse: $body");
-
-      return response.statusCode == 200;
-    } catch (e) {
-      print("❌ Erreur lors de l'envoi: $e");
-      return false;
-    }
+    return response;
   }
 }

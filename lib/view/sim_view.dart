@@ -64,7 +64,7 @@ class _SimViewState extends State<SimView> {
     });
 
     switch (index) {
-      case 0:
+      case 1:
         Get.toNamed('/toSend');
         break;
       case 2:
@@ -73,8 +73,8 @@ class _SimViewState extends State<SimView> {
       case 3:
         Get.toNamed('/stock');
         break;
-      case 4:git add .
-        Get.toNamed('/account');
+      case 4:
+        Get.toNamed('/MonCompteScreen');
         break;
     }
   }
@@ -188,7 +188,7 @@ class _SimViewState extends State<SimView> {
           BottomNavigationBarItem(icon: Icon(Icons.send), label: 'À envoyer'),
           BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: 'Ventes'),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Nouvelle'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Stock'),
+         
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Compte'),
         ],
       ),
@@ -209,6 +209,6 @@ class _SimViewState extends State<SimView> {
   }
 
   void _showEditDialog(SimModel sim) {
-    // Ajoute ici le code pour afficher un dialog d’édition si nécessaire
+   
   }
 }

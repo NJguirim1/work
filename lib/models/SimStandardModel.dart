@@ -1,15 +1,27 @@
-class StandardSimModel {
-  String cin;
+class SimSale {
+  int type; // toujours 0 pour standard
   String iccId;
-  String? frontImagePath;
-  String? backImagePath;
-  String? contractImagePath;
+  String nationalIdNumber;
+  String passportNumber; // vide pour standard
+  String sellPointId;
+  String latitude;
+  String longitude;
+  String city;
+  String country;
+  String inChargeSupervisorId;
+  String dateEnvoi;
 
-  StandardSimModel({
-    required this.cin,
+  SimSale({
+    required this.type,
     required this.iccId,
-    this.frontImagePath,
-    this.backImagePath,
-    this.contractImagePath,
+    required this.nationalIdNumber,
+    this.passportNumber = '',
+    required this.sellPointId,
+    required this.latitude,
+    required this.longitude,
+    required this.city,
+    required this.country,
+    required this.inChargeSupervisorId,
+    required this.dateEnvoi,
   });
 }

@@ -1,42 +1,62 @@
 import 'dart:convert';
-import 'package:image_picker/image_picker.dart';
-import '../models/portability_sim_model.dart';
-import '../services/portability_sim_service.dart';
+import 'dart:io';
 
-class PortabilitySimController {
-  final PortabilitySimModel model;
-  final PortabilitySimService service;
+import 'package:http/http.dart' as http;
 
-  PortabilitySimController(this.model, this.service);
+class PortabiliteSimController {
+  final String baseUrl = 'http://preprod-orange.ernst.tn/';
 
-  Future<void> pickImage(Function(String) onImagePicked) async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.camera);
-    if (picked != null) {
-      final bytes = await picked.readAsBytes();
-      final base64Image = base64Encode(bytes);
-      onImagePicked(base64Image);
-    }
-  }
-
-  Future<bool> submit({
+  Future<http.Response> submitPortabiliteSim({
     required String token,
-    required String sellPointId,
-    required String latitude,
-    required String longitude,
-    required String city,
-    required String country,
-    required String supervisorId,
+    required String iccid,
+    required String cin,
+    required String portabilityNumber,
+    required File frontCinImage,
+    required File backCinImage,
+    required File rioSignatureImage,
+    required File contractImage, required File portabilityNumberImage,
   }) async {
-    return await service.submitPortabilitySale(
-      model: model,
-      token: token,
-      sellPointId: sellPointId,
-      latitude: latitude,
-      longitude: longitude,
-      city: city,
-      country: country,
-      supervisorId: supervisorId,
+    final url = Uri.parse(baseUrl + 'Main/Api/Sims/CreateSell');
+
+    // Convertir les images en base64
+    String frontCinBase64 = base64Encode(await frontCinImage.readAsBytes());
+    String backCinBase64 = base64Encode(await backCinImage.readAsBytes());
+    String rioSignatureBase64 = base64Encode(await rioSignatureImage.readAsBytes());
+    String contractBase64 = base64Encode(await contractImage.readAsBytes());
+
+    final body = {
+      'Type': 1, // 1 = Portabilité
+      'IccId': iccid,
+      'NationalIdentificationNumber': cin,
+      'PassportNumber': '', // inutilisé pour la portabilité
+      'SellPointId': '2040', // à adapter dynamiquement si besoin
+      'Latitude': '35.667336',
+      'Longitude': '10.9001284',
+      'City': 'SAYADA',
+      'Country': 'TN',
+      'InChargeSupervisorId': '1507', // à adapter si besoin
+      'DateEnvoi': DateTime.now().toIso8601String().split('.').first,
+      'Portability_NationalIdentificationNumberFrontImage': frontCinBase64,
+      'Portability_NationalIdentificationNumberBackImage': backCinBase64,
+      'Portability_RioClientSignatureImage': rioSignatureBase64,
+      'Portability_ContractImage': contractBase64,
+      'PortabilityNumber': portabilityNumber,
+    };
+
+    print('📝 Champs envoyés : $body');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
     );
+
+    print('📨 Status Code: ${response.statusCode}');
+    print('📨 API Response: ${response.body}');
+
+    return response;
   }
 }
