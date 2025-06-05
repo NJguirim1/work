@@ -1,202 +1,264 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controllers/portability_sim_controller.dart';
 import 'package:flutter_application_1/models/portability_sim_model.dart';
-import 'package:flutter_application_1/view/standard_sim_view.dart';
- // à adapter
 import 'package:image_picker/image_picker.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 
-class PortabiliteSimPage extends StatefulWidget {
+
+class PortabilitySimSaleView extends StatefulWidget {
+  final String token;
+
+  const PortabilitySimSaleView({Key? key, required this.token}) : super(key: key);
+
   @override
-  _PortabiliteSimPageState createState() => _PortabiliteSimPageState();
+  _PortabilitySimSaleViewState createState() => _PortabilitySimSaleViewState();
 }
 
-class _PortabiliteSimPageState extends State<PortabiliteSimPage>
-    with SingleTickerProviderStateMixin {
-  final PortabiliteSimController controller = PortabiliteSimController();
+class _PortabilitySimSaleViewState extends State<PortabilitySimSaleView> {
+  final _formKey = GlobalKey<FormState>();
 
-  String iccid = '';
-  final TextEditingController cinController = TextEditingController();
+  final TextEditingController _iccIdController = TextEditingController();
+  final TextEditingController _nationalIdController = TextEditingController();
+  final TextEditingController _portabilityNumberController = TextEditingController();
+  final TextEditingController _passportNumberController = TextEditingController();
+  final TextEditingController _sellPointIdController = TextEditingController(text: "2040");
+  final TextEditingController _latitudeController = TextEditingController(text: "35.667336");
+  final TextEditingController _longitudeController = TextEditingController(text: "10.9001284");
+  final TextEditingController _cityController = TextEditingController(text: "SAYADA");
+  final TextEditingController _countryController = TextEditingController(text: "TN");
+  final TextEditingController _supervisorIdController = TextEditingController();
 
-  File? frontCinImage;
-  File? backCinImage;
-  File? rioSignatureImage;
-  File? portabilityNumberImage;
-  File? contractImage;
+  final ImagePicker _picker = ImagePicker();
 
-  final String token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjU2NTEiLCJOYW1lIjoiQUJET1VMSSBNSUxFRCIsIlVzZXJuYW1lIjoibWlsZWQiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ4NTU1MDE0LCJleHAiOjE3NDg1NTg2MTQsImlhdCI6MTc0ODU1NTAxNCwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.gf7-XEzgy_bYrTpgea80sSnnDKGvGJp4uBlPccGzSj4';
+  String? frontCinBase64;
+  String? backCinBase64;
+  String? rioSignatureBase64;
+  String? rioSignature2Base64;
+  String? numberImageBase64;
+  String? contractBase64;
 
-  late TabController _tabController;
+  bool _isSubmitting = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        if (_tabController.index == 0) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => StandardSimPage()),
-          );
-        } else if (_tabController.index == 2) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Page Étranger pas encore disponible')),
-          );
-          _tabController.index = 1;
-        }
-      }
-    });
-  }
-
-  Future<void> scanIccid() async {
+  Future<void> scanICCID() async {
     var result = await BarcodeScanner.scan();
     if (result.type == ResultType.Barcode) {
       setState(() {
-        iccid = result.rawContent;
+        _iccIdController.text = result.rawContent;
       });
     }
   }
 
-  Future<void> takePhoto(int imageNumber) async {
-    final picker = ImagePicker();
-    final pickedFile =
-        await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+  Future<void> pickImage(String type) async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
     if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      final base64img = base64Encode(bytes);
       setState(() {
-        File image = File(pickedFile.path);
-        switch (imageNumber) {
-          case 1:
-            frontCinImage = image;
+        switch (type) {
+          case "frontCin":
+            frontCinBase64 = base64img;
             break;
-          case 2:
-            backCinImage = image;
+          case "backCin":
+            backCinBase64 = base64img;
             break;
-          case 3:
-            rioSignatureImage = image;
+          case "rioSignature":
+            rioSignatureBase64 = base64img;
             break;
-          case 4:
-            portabilityNumberImage = image;
+          case "rioSignature2":
+            rioSignature2Base64 = base64img;
             break;
-          case 5:
-            contractImage = image;
+          case "numberImage":
+            numberImageBase64 = base64img;
+            break;
+          case "contract":
+            contractBase64 = base64img;
             break;
         }
       });
     }
   }
 
-  Future<void> submit() async {
-    if (iccid.isEmpty ||
-        cinController.text.isEmpty ||
-        frontCinImage == null ||
-        backCinImage == null ||
-        rioSignatureImage == null ||
-        portabilityNumberImage == null ||
-        contractImage == null) {
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (frontCinBase64 == null ||
+        backCinBase64 == null ||
+        rioSignatureBase64 == null ||
+        rioSignature2Base64 == null ||
+        numberImageBase64 == null ||
+        contractBase64 == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Veuillez remplir tous les champs et prendre toutes les photos')),
+        SnackBar(content: Text("Merci de fournir toutes les images")),
       );
       return;
     }
 
-    final response = await controller.submitPortabiliteSim(
-      token: token,
-      iccid: iccid,
-      cin: cinController.text,
-      frontCinImage: frontCinImage!,
-      backCinImage: backCinImage!,
-      rioSignatureImage: rioSignatureImage!,
-      portabilityNumberImage: portabilityNumberImage!,
-      contractImage: contractImage!, portabilityNumber: '',
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final controller = PortabilitySimSaleController(token: widget.token);
+
+    final model = PortabilitySimSaleModel(
+      type: 1,
+      iccId: _iccIdController.text.trim(),
+      nationalIdNumber: _nationalIdController.text.trim(),
+      portabilityNumber: _portabilityNumberController.text.trim(),
+      passportNumber: _passportNumberController.text.trim(),
+      sellPointId: _sellPointIdController.text.trim(),
+      latitude: _latitudeController.text.trim(),
+      longitude: _longitudeController.text.trim(),
+      city: _cityController.text.trim(),
+      country: _countryController.text.trim(),
+      portabilityNationalIdentificationNumberFrontImage: frontCinBase64!,
+      portabilityNationalIdentificationNumberBackImage: backCinBase64!,
+      portabilityRioSignatureImage: rioSignatureBase64!,
+      portabilityRioSignatureImage2: rioSignature2Base64!,
+      portabilityNumberImage: numberImageBase64!,
+      portabilityContratImage: contractBase64!,
+      inChargeSupervisorId: _supervisorIdController.text.trim(),
+      dateEnvoi: DateTime.now().toIso8601String(),
     );
 
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Soumission réussie')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text('Erreur ${response.statusCode} : ${response.body}')),
-      );
+    final result = await controller.submitSale(model);
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result["message"] ?? "Erreur inconnue")),
+    );
+
+    if (result["success"] == true) {
+      _formKey.currentState?.reset();
+      setState(() {
+        frontCinBase64 = null;
+        backCinBase64 = null;
+        rioSignatureBase64 = null;
+        rioSignature2Base64 = null;
+        numberImageBase64 = null;
+        contractBase64 = null;
+      });
     }
   }
 
-  @override
-  void dispose() {
-    cinController.dispose();
-    _tabController.dispose();
-    super.dispose();
+  Widget _buildImagePicker(String label, String type, String? base64img) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        SizedBox(height: 8),
+        InkWell(
+          onTap: () => pickImage(type),
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
+            child: base64img == null
+                ? Icon(Icons.camera_alt, size: 40, color: Colors.grey)
+                : Image.memory(base64Decode(base64img), fit: BoxFit.cover),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestion SIM'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Standard'),
-            Tab(text: 'Portabilité'),
-            Tab(text: 'Étranger'),
-          ],
+        title: Text('Vente SIM Portabilité'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.qr_code_scanner),
+            onPressed: scanICCID,
+            tooltip: "Scanner ICCID",
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _iccIdController,
+                decoration: InputDecoration(
+                  labelText: "ICCID",
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.qr_code_scanner),
+                    onPressed: scanICCID,
+                  ),
+                ),
+                validator: (v) => v == null || v.isEmpty ? "ICCID requis" : null,
+              ),
+              TextFormField(
+                controller: _nationalIdController,
+                decoration: InputDecoration(labelText: "Numéro CIN"),
+                validator: (v) => v == null || v.isEmpty ? "Numéro CIN requis" : null,
+              ),
+              TextFormField(
+                controller: _portabilityNumberController,
+                decoration: InputDecoration(labelText: "Numéro Portabilité"),
+                // si tu veux, tu peux le rendre optionnel
+              ),
+              TextFormField(
+                controller: _passportNumberController,
+                decoration: InputDecoration(labelText: "Numéro Passeport (optionnel)"),
+              ),
+              TextFormField(
+                controller: _sellPointIdController,
+                decoration: InputDecoration(labelText: "SellPointId"),
+                validator: (v) => v == null || v.isEmpty ? "SellPointId requis" : null,
+              ),
+              TextFormField(
+                controller: _latitudeController,
+                decoration: InputDecoration(labelText: "Latitude"),
+              ),
+              TextFormField(
+                controller: _longitudeController,
+                decoration: InputDecoration(labelText: "Longitude"),
+              ),
+              TextFormField(
+                controller: _cityController,
+                decoration: InputDecoration(labelText: "Ville"),
+              ),
+              TextFormField(
+                controller: _countryController,
+                decoration: InputDecoration(labelText: "Pays"),
+              ),
+              TextFormField(
+                controller: _supervisorIdController,
+                decoration: InputDecoration(labelText: "ID Superviseur"),
+              ),
+              SizedBox(height: 20),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  _buildImagePicker("Photo CIN Face", "frontCin", frontCinBase64),
+                  _buildImagePicker("Photo CIN Dos", "backCin", backCinBase64),
+                  _buildImagePicker("Signature RIO 1", "rioSignature", rioSignatureBase64),
+                  _buildImagePicker("Signature RIO 2", "rioSignature2", rioSignature2Base64),
+                  _buildImagePicker("Photo Numéro Portabilité", "numberImage", numberImageBase64),
+                  _buildImagePicker("Photo Contrat", "contract", contractBase64),
+                ],
+              ),
+              SizedBox(height: 30),
+              _isSubmitting
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _submit,
+                      child: Text("Soumettre la vente"),
+                    ),
+            ],
+          ),
         ),
       ),
-      body: buildPortabiliteForm(),
-    );
-  }
-
-  Widget buildPortabiliteForm() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: scanIccid,
-              child: const Text('Scanner ICCID'),
-            ),
-            const SizedBox(height: 10),
-            Text('ICCID scanné: $iccid'),
-            const SizedBox(height: 20),
-            TextField(
-              controller: cinController,
-              decoration: const InputDecoration(labelText: 'Numéro CIN'),
-            ),
-            const SizedBox(height: 20),
-            buildPhotoRow('Photo Front CIN', frontCinImage, () => takePhoto(1)),
-            buildPhotoRow('Photo Back CIN', backCinImage, () => takePhoto(2)),
-            buildPhotoRow('Photo RIO & Signature Client', rioSignatureImage, () => takePhoto(3)),
-            buildPhotoRow('Photo Numéro Portabilité', portabilityNumberImage, () => takePhoto(4)),
-            buildPhotoRow('Photo Contrat', contractImage, () => takePhoto(5)),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: submit,
-              child: const Text('Soumettre'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildPhotoRow(String label, File? image, VoidCallback onPressed) {
-    return Row(
-      children: [
-        ElevatedButton(onPressed: onPressed, child: Text(label)),
-        const SizedBox(width: 10),
-        image == null
-            ? const Text('Aucune photo')
-            : const Icon(Icons.check_circle, color: Colors.green),
-      ],
     );
   }
 }

@@ -29,7 +29,7 @@ class SimController {
     }
   }
 
-  // ✏️ Update SIM Data (e.g., state or other)
+ 
   Future<void> updateSim(SimModel sim) async {
     try {
       final response = await http.post(
@@ -41,7 +41,7 @@ class SimController {
         body: json.encode({
           "CinNumber": sim.cinNumber,
           "DateEmission": sim.dateEmission,
-          "State": _getStateText(sim.state), // UPDATED
+          "State": _getStateText(sim.state), 
           "ContratNumber": sim.contratNumber,
           "TelephoneNumber": sim.telephoneNumber,
           "PvName": sim.pvName,

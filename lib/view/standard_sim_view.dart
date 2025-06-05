@@ -30,7 +30,7 @@ class _StandardSimPageState extends State<StandardSimPage>
   File? contractImage;
 
   final String token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjU2NTEiLCJOYW1lIjoiQUJET1VMSSBNSUxFRCIsIlVzZXJuYW1lIjoibWlsZWQiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ4NTU1MDE0LCJleHAiOjE3NDg1NTg2MTQsImlhdCI6MTc0ODU1NTAxNCwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.gf7-XEzgy_bYrTpgea80sSnnDKGvGJp4uBlPccGzSj4';
+     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ5MTMzNTM2LCJleHAiOjE3NDkxMzcxMzYsImlhdCI6MTc0OTEzMzUzNiwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.RWda_w9UMyes3VBQ9QGF2UMFr0MhByZdRa8C8dfosBk';
 
   late TabController _tabController;
 
@@ -44,7 +44,7 @@ class _StandardSimPageState extends State<StandardSimPage>
         if (_tabController.index == 1) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PortabiliteSimPage()),
+            MaterialPageRoute(builder: (context) => PortabilitySimSaleView(token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ5MTMzNTM2LCJleHAiOjE3NDkxMzcxMzYsImlhdCI6MTc0OTEzMzUzNiwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.RWda_w9UMyes3VBQ9QGF2UMFr0MhByZdRa8C8dfosBk',)),
           ).then((_) {
             _tabController.index = 0; 
           });
@@ -52,7 +52,7 @@ class _StandardSimPageState extends State<StandardSimPage>
     
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => EtrangerSimView()),
+            MaterialPageRoute(builder: (context) => ForeignSimSaleView(token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ5MTMzNTM2LCJleHAiOjE3NDkxMzcxMzYsImlhdCI6MTc0OTEzMzUzNiwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.RWda_w9UMyes3VBQ9QGF2UMFr0MhByZdRa8C8dfosBk')),
           ).then((_) {
             _tabController.index = 0; 
           });

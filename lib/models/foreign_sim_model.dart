@@ -1,18 +1,20 @@
-class ForeignSaleModel {
-  String iccId;
-  String passportNumber;
-  String sellPointId;
-  String latitude;
-  String longitude;
-  String city;
-  String country;
-  String passportImage1Base64;
-  String passportImage2Base64; // optional
-  String contractImageBase64;
-  String inChargeSupervisorId; // optional
-  String dateEnvoi;
+class ForeignSimSaleModel {
+  final int type;
+  final String iccId;
+  final String passportNumber;
+  final String sellPointId;
+  final String latitude;
+  final String longitude;
+  final String city;
+  final String country;
+  final String foreignPassportImage1;
+  final String foreignPassportImage2;
+  final String foreignContratImage;
+  final String inChargeSupervisorId;
+  final String dateEnvoi;
 
-  ForeignSaleModel({
+  ForeignSimSaleModel({
+    required this.type,
     required this.iccId,
     required this.passportNumber,
     required this.sellPointId,
@@ -20,44 +22,26 @@ class ForeignSaleModel {
     required this.longitude,
     required this.city,
     required this.country,
-    required this.passportImage1Base64,
-    required this.passportImage2Base64,
-    required this.contractImageBase64,
-    this.inChargeSupervisorId = '',
+    required this.foreignPassportImage1,
+    required this.foreignPassportImage2,
+    required this.foreignContratImage,
+    required this.inChargeSupervisorId,
     required this.dateEnvoi,
   });
 
   Map<String, dynamic> toJson() => {
-        "Type": 2,
+        "Type": type,
         "IccId": iccId,
-        "NationalIdentificationNumber": "",
         "PassportNumber": passportNumber,
         "SellPointId": sellPointId,
         "Latitude": latitude,
         "Longitude": longitude,
         "City": city,
         "Country": country,
-        "Foreign_PassportImage1": passportImage1Base64,
-        "Foreign_PassportImage2": passportImage2Base64,
-        "Foreign_ContratImage": contractImageBase64,
+        "Foreign_PassportImage1": foreignPassportImage1,
+        "Foreign_PassportImage2": foreignPassportImage2,
+        "Foreign_ContratImage": foreignContratImage,
         "InChargeSupervisorId": inChargeSupervisorId,
         "DateEnvoi": dateEnvoi,
       };
-
-  factory ForeignSaleModel.fromJson(Map<String, dynamic> json) {
-    return ForeignSaleModel(
-      iccId: json["IccId"],
-      passportNumber: json["PassportNumber"],
-      sellPointId: json["SellPointId"],
-      latitude: json["Latitude"],
-      longitude: json["Longitude"],
-      city: json["City"],
-      country: json["Country"],
-      passportImage1Base64: json["Foreign_PassportImage1"],
-      passportImage2Base64: json["Foreign_PassportImage2"] ?? '',
-      contractImageBase64: json["Foreign_ContratImage"],
-      inChargeSupervisorId: json["InChargeSupervisorId"] ?? '',
-      dateEnvoi: json["DateEnvoi"],
-    );
-  }
 }

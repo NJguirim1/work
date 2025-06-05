@@ -1,7 +1,7 @@
 class SimSaleEtranger {
-  final int type = 2; // Fixe pour "Étranger"
+  final int type = 2; 
   final String iccId;
-  final String passportNumber; // Peut être vide
+  final String passportNumber; 
   final String sellPointId;
   final String latitude;
   final String longitude;

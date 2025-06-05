@@ -1,155 +1,219 @@
-import 'dart:io';
-
-import 'package:barcode_scan2/barcode_scan2.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/controllers/etrangercontroller.dart';
-
+import 'package:flutter_application_1/controllers/foreign_sim_controller.dart';
+import 'package:flutter_application_1/models/foreign_sim_model.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 
-class EtrangerSimView extends StatefulWidget {
+
+
+class ForeignSimSaleView extends StatefulWidget {
+  final String token;
+
+  const ForeignSimSaleView({Key? key, required this.token}) : super(key: key);
+
   @override
-  _EtrangerSimViewState createState() => _EtrangerSimViewState();
+  _ForeignSimSaleViewState createState() => _ForeignSimSaleViewState();
 }
 
-class _EtrangerSimViewState extends State<EtrangerSimView> {
-  final EtrangerSimController controller = EtrangerSimController();
+class _ForeignSimSaleViewState extends State<ForeignSimSaleView> {
+  final _formKey = GlobalKey<FormState>();
 
-  String iccid = '';
-  final TextEditingController passportNumberController = TextEditingController();
+  final TextEditingController _iccIdController = TextEditingController();
+  final TextEditingController _passportNumberController = TextEditingController();
+  final TextEditingController _sellPointIdController = TextEditingController(text: "2040");
+  final TextEditingController _latitudeController = TextEditingController(text: "35.667336");
+  final TextEditingController _longitudeController = TextEditingController(text: "10.9001284");
+  final TextEditingController _cityController = TextEditingController(text: "SAYADA");
+  final TextEditingController _countryController = TextEditingController(text: "TN");
+  final TextEditingController _supervisorIdController = TextEditingController();
 
-  File? passportImage;
-  File? contractImage;
+  final ImagePicker _picker = ImagePicker();
 
-  // Replace by your actual token or get it dynamically
-  final String token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjU2NTEiLCJOYW1lIjoiQUJET1VMSSBNSUxFRCIsIlVzZXJuYW1lIjoibWlsZWQiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ4NTU1MDE0LCJleHAiOjE3NDg1NTg2MTQsImlhdCI6MTc0ODU1NTAxNCwiaXNzIjoiSXNzdWVyIiwiYXVkIjoiQXVkaWVuY2UifQ.gf7-XEzgy_bYrTpgea80sSnnDKGvGJp4uBlPccGzSj4';
+  String? passportImage1Base64;
+  String? passportImage2Base64;
+  String? contractBase64;
 
-  // You might want to get these values from user or context:
-  final String sellPointId = '2040';
-  final String latitude = '35.667336';
-  final String longitude = '10.9001284';
-  final String city = 'SAYADA';
-  final String country = 'TN';
-  final String inChargeSupervisorId = '1507';
-  final String dateEnvoi = DateTime.now().toIso8601String();
+  bool _isSubmitting = false;
 
-  Future<void> scanIccid() async {
-    var result = await BarcodeScanner.scan();
-    if (result.type == ResultType.Barcode) {
-      setState(() {
-        iccid = result.rawContent;
-      });
-    }
-  }
-
-  Future<void> takePhoto(int imageNumber) async {
-    final picker = ImagePicker();
-    final pickedFile =
-        await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+  Future<void> pickImage(String type) async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
     if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      final base64img = base64Encode(bytes);
       setState(() {
-        if (imageNumber == 1) passportImage = File(pickedFile.path);
-        if (imageNumber == 2) contractImage = File(pickedFile.path);
+        if (type == 'passport1') passportImage1Base64 = base64img;
+        else if (type == 'passport2') passportImage2Base64 = base64img;
+        else if (type == 'contract') contractBase64 = base64img;
       });
     }
   }
 
-  Future<void> submit() async {
-    if (iccid.isEmpty || passportImage == null || contractImage == null) {
+  Future<void> scanICCID() async {
+    try {
+      var result = await BarcodeScanner.scan();
+      if (result.type == ResultType.Barcode) {
+        setState(() {
+          _iccIdController.text = result.rawContent;
+        });
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Veuillez scanner ICCID et prendre toutes les photos')),
+        SnackBar(content: Text("Erreur lors du scan: $e")),
+      );
+    }
+  }
+
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (passportImage1Base64 == null ||
+        passportImage2Base64 == null ||
+        contractBase64 == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Merci de fournir toutes les images")),
       );
       return;
     }
 
-    final response = await controller.submitEtrangerSim(
-      token: token,
-      iccid: iccid,
-      passportNumber: passportNumberController.text,
-      passportImage: passportImage!,
-      contractImage: contractImage!,
-      sellPointId: sellPointId,
-      latitude: latitude,
-      longitude: longitude,
-      city: city,
-      country: country,
-      inChargeSupervisorId: inChargeSupervisorId,
-      dateEnvoi: dateEnvoi,
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final controller = ForeignSimSaleController(token: widget.token);
+
+    final model = ForeignSimSaleModel(
+      type: 2,
+      iccId: _iccIdController.text.trim(),
+      passportNumber: _passportNumberController.text.trim(),
+      sellPointId: _sellPointIdController.text.trim(),
+      latitude: _latitudeController.text.trim(),
+      longitude: _longitudeController.text.trim(),
+      city: _cityController.text.trim(),
+      country: _countryController.text.trim(),
+      foreignPassportImage1: passportImage1Base64!,
+      foreignPassportImage2: passportImage2Base64!,
+      foreignContratImage: contractBase64!,
+      inChargeSupervisorId: _supervisorIdController.text.trim(),
+      dateEnvoi: DateTime.now().toIso8601String(),
     );
 
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Soumission réussie')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text('Erreur ${response.statusCode} : ${response.body}')),
-      );
+    final result = await controller.submitSale(model);
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result["message"] ?? "Erreur inconnue")),
+    );
+
+    if (result["success"] == true) {
+      _formKey.currentState?.reset();
+      setState(() {
+        passportImage1Base64 = null;
+        passportImage2Base64 = null;
+        contractBase64 = null;
+      });
     }
   }
 
-  @override
-  void dispose() {
-    passportNumberController.dispose();
-    super.dispose();
+  Widget _buildImagePicker(String label, String type, String? base64img) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        SizedBox(height: 8),
+        InkWell(
+          onTap: () => pickImage(type),
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
+            child: base64img == null
+                ? Icon(Icons.camera_alt, size: 40, color: Colors.grey)
+                : Image.memory(base64Decode(base64img), fit: BoxFit.cover),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Vente SIM Étranger'),
+        title: Text('Vente SIM Étranger'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
           child: Column(
             children: [
-              ElevatedButton(
-                onPressed: scanIccid,
-                child: const Text('Scanner ICCID'),
-              ),
-              const SizedBox(height: 10),
-              Text('ICCID scanné: $iccid'),
-              const SizedBox(height: 20),
-              TextField(
-                controller: passportNumberController,
-                decoration: const InputDecoration(labelText: 'Numéro Passeport (optionnel)'),
-              ),
-              const SizedBox(height: 20),
               Row(
                 children: [
-                  ElevatedButton(
-                    onPressed: () => takePhoto(1),
-                    child: const Text('Photo Passeport'),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _iccIdController,
+                      decoration: InputDecoration(labelText: "ICCID"),
+                      validator: (v) => v == null || v.isEmpty ? "ICCID requis" : null,
+                    ),
                   ),
-                  const SizedBox(width: 10),
-                  passportImage == null
-                      ? const Text('Aucune photo')
-                      : const Icon(Icons.check_circle, color: Colors.green),
+                  IconButton(
+                    icon: Icon(Icons.qr_code_scanner),
+                    onPressed: scanICCID,
+                    tooltip: "Scanner ICCID",
+                  ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Row(
+              TextFormField(
+                controller: _passportNumberController,
+                decoration: InputDecoration(labelText: "Numéro Passeport"),
+                validator: (v) => v == null || v.isEmpty ? "Numéro Passeport requis" : null,
+              ),
+              TextFormField(
+                controller: _sellPointIdController,
+                decoration: InputDecoration(labelText: "SellPointId"),
+                validator: (v) => v == null || v.isEmpty ? "SellPointId requis" : null,
+              ),
+              TextFormField(
+                controller: _latitudeController,
+                decoration: InputDecoration(labelText: "Latitude"),
+              ),
+              TextFormField(
+                controller: _longitudeController,
+                decoration: InputDecoration(labelText: "Longitude"),
+              ),
+              TextFormField(
+                controller: _cityController,
+                decoration: InputDecoration(labelText: "Ville"),
+              ),
+              TextFormField(
+                controller: _countryController,
+                decoration: InputDecoration(labelText: "Pays"),
+              ),
+              TextFormField(
+                controller: _supervisorIdController,
+                decoration: InputDecoration(labelText: "ID Superviseur"),
+              ),
+              SizedBox(height: 20),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
                 children: [
-                  ElevatedButton(
-                    onPressed: () => takePhoto(2),
-                    child: const Text('Photo Contrat'),
-                  ),
-                  const SizedBox(width: 10),
-                  contractImage == null
-                      ? const Text('Aucune photo')
-                      : const Icon(Icons.check_circle, color: Colors.green),
+                  _buildImagePicker("Photo Passeport 1", "passport1", passportImage1Base64),
+                  _buildImagePicker("Photo Passeport 2", "passport2", passportImage2Base64),
+                  _buildImagePicker("Photo Contrat", "contract", contractBase64),
                 ],
               ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: submit,
-                child: const Text('Soumettre'),
-              ),
+              SizedBox(height: 30),
+              _isSubmitting
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _submit,
+                      child: Text("Soumettre la vente"),
+                    ),
             ],
           ),
         ),
