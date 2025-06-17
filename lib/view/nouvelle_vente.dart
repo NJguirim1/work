@@ -79,7 +79,7 @@ class _NouvelleVenteScreenState extends State<NouvelleVenteScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.send), label: 'À envoyer'),
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Ventes'),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Nouvelle'),
-          BottomNavigationBarItem(icon: Icon(Icons.storage), label: 'Stock'),
+      
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Compte'),
         ],
       ),

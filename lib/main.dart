@@ -7,6 +7,7 @@ import 'package:flutter_application_1/view/nouvelle_vente.dart';
 import 'package:flutter_application_1/view/report_screen.dart';
 import 'package:flutter_application_1/view/sim_view.dart';
 import 'package:flutter_application_1/view/statique_screen.dart';
+import 'package:flutter_application_1/view/unsentsalepage.dart';
 
 import 'package:get/get.dart';
 import 'package:flutter_application_1/view/login_screen.dart';
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
   GetPage(name: '/ReportView', page: () => const SupervisorReportPage (token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjE0NDQiLCJOYW1lIjoiQUJET1VMSSBOT09NQU4iLCJVc2VybmFtZSI6Im5vb21hbmEiLCJUeXBlIjoiRmllbGRTdXBlcnZpc29yIiwibmJmIjoxNzQ2NzI0MTYxLCJleHAiOjE3NDY3Mjc3NjEsImlhdCI6MTc0NjcyNDE2MSwiaXNzIjoiSXNzdW', from: '', to: '',)),
     GetPage(name: '/NouvelleVenteScreen', page: () => const NouvelleVenteScreen()),
           GetPage(name: '/MonCompteScreen', page: () => const MonCompteScreen()),
+            GetPage(name: '/UnsentSalesPage', page: () => UnsentSalesPage()),
       ],
     );
   }

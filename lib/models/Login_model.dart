@@ -5,6 +5,8 @@ class LoginModel {
   final String deviceId;
   final String deviceType;
 
+  var token;
+
   LoginModel({
     required this.login,  
     required this.password,
@@ -23,6 +25,12 @@ class LoginModel {
       deviceType: json['DeviceType'] ?? '', // Handle null with a default value
     );
   }
+
+ 
+
+  
+
+  get userName => null;
 
   // Convert LoginModel to JSON
   Map<String, dynamic> toJson() {

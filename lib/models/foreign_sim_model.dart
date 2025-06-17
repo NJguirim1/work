@@ -44,4 +44,6 @@ class ForeignSimSaleModel {
         "InChargeSupervisorId": inChargeSupervisorId,
         "DateEnvoi": dateEnvoi,
       };
+
+
 }

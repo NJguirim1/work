@@ -3,23 +3,31 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:device_info_plus/device_info_plus.dart';
 
+
+
 class LoginController {
   final String apiUrl = 'http://preprod-orange.ernst.tn/Main/Api/authentication/Login';
+  final http.Client client;
+
+
+  final String? deviceIdOverride;
+
+  LoginController({http.Client? client, this.deviceIdOverride,    }) : client = client ?? http.Client();
 
   Future<LoginModel?> authenticateUser(String username, String password) async {
-    String deviceId = await _getDeviceId();
+    final deviceId = deviceIdOverride ?? await _getDeviceId();
 
     Map<String, dynamic> requestBody = {
-      'Login': username,  // Change 'username' to 'Login'
+      'Login': username,
       'Password': password,
-      'RememberMe': false,  // Add RememberMe field
-      'DeviceId': deviceId,  // Add DeviceId field
-      'DeviceType': 'android',  // Add DeviceType field
+      'RememberMe': false,
+      'DeviceId': deviceId,
+      'DeviceType': 'android',
     };
 
     print('Request payload: ${jsonEncode(requestBody)}');
 
-    final response = await http.post(
+    final response = await client.post(
       Uri.parse(apiUrl),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
@@ -27,14 +35,12 @@ class LoginController {
       body: jsonEncode(requestBody),
     );
 
-    // Print response for debugging
     print('Status code: ${response.statusCode}');
     print('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
 
-      // Check for specific fields that indicate success
       if (responseBody['Success'] == true) {
         return LoginModel.fromJson(responseBody);
       } else {
@@ -50,6 +56,6 @@ class LoginController {
   Future<String> _getDeviceId() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-    return androidInfo.id; // Unique device ID
+    return androidInfo.id;
   }
 }

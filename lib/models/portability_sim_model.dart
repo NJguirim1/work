@@ -59,4 +59,6 @@ class PortabilitySimSaleModel {
         "InChargeSupervisorId": inChargeSupervisorId,
         "DateEnvoi": dateEnvoi,
       };
+
+  static fromJson(Map<String, Object> saleData) {}
 }
